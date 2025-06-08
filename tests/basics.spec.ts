@@ -166,4 +166,12 @@ test.describe('UI', () => {
         await expect(confirmText).toBeVisible()
 
     })
+
+    test('Drug and Drop', async ({page}) => {
+        const dragElement = page.locator("#draggable")
+        const dropElement = page.locator("#droppable")
+
+        await dragElement.dragTo(dropElement)
+        await expect(dropElement).toHaveText("Dropped!")
+    })
 });
