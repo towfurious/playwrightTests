@@ -68,10 +68,10 @@ test.describe('Assertions scope', () => {
     test('Assertions', async ({page}) => {
         const fiveSecondsButton = page.locator('#applyButton5')
         await expect(fiveSecondsButton).toHaveText('Apply 5s')
+        const targetButton = page.locator('#target')
 
         await fiveSecondsButton.click()
         await expect(fiveSecondsButton).toHaveText('Apply 5s')
-        const targetButton = page.locator('#target')
         await expect(targetButton).toBeVisible({timeout: 6000})
         await page.getByRole('checkbox', {name: 'enabled'}).uncheck()
         await fiveSecondsButton.click()
@@ -87,7 +87,7 @@ test.describe('Assertions scope', () => {
 
 test.describe('Auto await scope', () => {
     test.beforeEach(async ({page}) => {
-        await page.goto('http://play1.automationcamp.ir/expected_conditions.html')
+        await page.goto('https://play1.automationcamp.ir/expected_conditions.html')
     })
 
     test('Auto await', async ({page}) => {
@@ -95,7 +95,75 @@ test.describe('Auto await scope', () => {
         await minInput.clear();
         await minInput.fill('5')
 
-        await page.locator('#visibility_trigger').first().click()
-        await page.locator('#visibility_target').click({timeout: 3000})
+        await page.locator('#visibility_trigger').click()
+        await page.locator('#visibility_target').click({timeout: 6000})
+    })
+});
+
+test.describe('Network auto await', () => {
+    test.beforeEach(async ({page}) => {
+        await page.goto('http://www.uitestingplayground.com/ajax')
+    })
+
+    test('Network await', async ({page}) => {
+        const pageLoadText = page.getByText('Data loaded with AJAX get request.')
+        const buttonAjax = page.getByText("Button Triggering AJAX Request")
+        await buttonAjax.click()
+        await page.waitForLoadState("networkidle") // wait for content to be loaded
+        await expect(pageLoadText).toBeVisible()
+    })
+});
+
+test.describe('UI', () => {
+    test.beforeEach(async ({page}) => {
+        await page.goto('https://testautomationpractice.blogspot.com/')
+    })
+
+    test('Radio buttons', async ({page}) => {
+        const buttonMale = page.locator("#male")
+        const buttonFemale = page.locator("#female")
+
+        await buttonMale.check()
+        expect(buttonMale.isChecked())
+        expect(await buttonFemale.isChecked()).toBe(false)
+
+        await buttonFemale.check()
+        expect(buttonFemale.isChecked())
+        expect(await buttonMale.isChecked()).toBe(false)
+    })
+
+    test('Checkboxes', async ({page}) => {
+        const mondayCheckbox = page.locator("#monday")
+        const fridayCheckbox = page.locator("#friday")
+
+        await mondayCheckbox.check()
+        await fridayCheckbox.check()
+        await expect(mondayCheckbox).toBeChecked()
+        await expect(fridayCheckbox).toBeChecked()
+    })
+
+    test('Dropdowns', async ({page}) => {
+        const country = page.locator("#country")
+
+        await country.selectOption("Japan")
+        await expect(country).toHaveValue("japan")
+
+        const comboBox = page.locator("#comboBox")
+        const dropDown = page.locator("#dropdown")
+        await comboBox.clear()
+        await comboBox.click()
+        await dropDown.filter({hasText: "Item 24"}).click()
+    })
+
+    test('Alerts', async ({page}) => {
+        const alertBtn = page.locator("#confirmBtn")
+        page.on("dialog", async (dialog) =>
+            dialog.accept())
+
+        await alertBtn.click()
+
+        const confirmText = page.locator("#demo")
+        await expect(confirmText).toBeVisible()
+
     })
 });
